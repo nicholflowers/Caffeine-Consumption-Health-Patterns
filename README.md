@@ -42,6 +42,9 @@ The dashboard gave way to the interactive silhouette, driven by a core design qu
 
 Twelve user interviews generated 41 feedback items, prioritized with the MoSCoW framework. Key fixes included adding a color legend, making the predicted stress value more prominent, adding context about what the stress percentage represents, correcting the color scheme from green to blue, and preventing caffeine from auto-updating when switching countries.
 
+### 🔹 Iteration 3: Usability-Driven Refinements
+A usability study of twelve user interviews (three per team member) generated 41 feedback items, prioritized with the MoSCoW framework. The improvements that followed included adding a color legend, making the predicted stress value more prominent, adding context about what the stress percentage represents, correcting the color scheme from green to blue, and preventing caffeine from auto-updating when switching countries.
+
 ## 🧠 Skills Demonstrated
 
 - **Interactive data visualization:** building a real-time, input-driven D3.js display that maps several variables onto a single embodied figure
