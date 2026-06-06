@@ -1,4 +1,5 @@
-# Caffeine-Consumption-Health-Patterns
+
+# Global Caffeine Consumption & Health Patterns
 
 An interactive visualization exploring how caffeine intake relates to stress, sleep, and lifestyle factors across 20 countries.
 
@@ -26,7 +27,7 @@ The project went through two major iterations.
 
 ## Data
 
-Global Coffee Health Dataset from Kaggle (10,000 synthetic records across 20 countries).
+[Global Coffee Health Dataset](https://www.kaggle.com/datasets/uom190346a/global-coffee-health-dataset) from Kaggle (10,000 synthetic records across 20 countries).
 
 ## Stack
 
