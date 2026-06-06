@@ -40,7 +40,7 @@ The dashboard gave way to the interactive silhouette, driven by a core design qu
 
 ### 🔹 Usability Study
 
-Twelve user interviews (three per team member) generated 41 feedback items, prioritized with the MoSCoW framework. Key fixes included adding a color legend, making the predicted stress value more prominent, adding context about what the stress percentage represents, correcting the color scheme from green to blue, and preventing caffeine from auto-updating when switching countries.
+Twelve user interviews generated 41 feedback items, prioritized with the MoSCoW framework. Key fixes included adding a color legend, making the predicted stress value more prominent, adding context about what the stress percentage represents, correcting the color scheme from green to blue, and preventing caffeine from auto-updating when switching countries.
 
 ## 🧠 Skills Demonstrated
 
