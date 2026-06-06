@@ -50,8 +50,4 @@ Twelve user interviews (three per team member) generated 41 feedback items, prio
 - **Visual encoding:** translating a predicted value into intuitive color, particle, and motion cues
 
 ## 🧰 Stack
-
-Includes but is not limited to D3.js, JavaScript, HTML/CSS, and GitHub Pages.
-
-
 D3.js, HTML/CSS, JavaScript, GitHub Pages
