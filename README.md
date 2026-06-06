@@ -28,7 +28,7 @@ Animated coffee particles flow through the body, scaling in quantity with caffei
 
 ## 🔁 Design Process
 
-The project went through two major iterations.
+The project went through three major iterations, with a usability study informing the final round of refinements.
 
 ### 🔹 Iteration 1: Traditional Dashboard
 
@@ -43,8 +43,8 @@ The dashboard gave way to the interactive silhouette, driven by a core design qu
 Twelve user interviews (three per team member) generated 41 feedback items, which were prioritized with the MoSCoW framework to separate the must-fix issues from lower-priority refinements.
 
 ### 🔹 Iteration 3: Usability-Driven Refinements
-The prioritized feedback drove a final round of improvements: adding a color legend, making the predicted stress value more prominent, adding context about what the stress percentage represents, correcting the color scheme from green to blue, and preventing caffeine from auto-updating when switching countries.
 
+The prioritized feedback drove a final round of improvements: adding a color legend, making the predicted stress value more prominent, adding context about what the stress percentage represents, correcting the color scheme from green to blue, and preventing caffeine from auto-updating when switching countries.
 
 ## 🧠 Skills Demonstrated
 
@@ -54,4 +54,5 @@ The prioritized feedback drove a final round of improvements: adding a color leg
 - **Visual encoding:** translating a predicted value into intuitive color, particle, and motion cues
 
 ## 🧰 Stack
+
 D3.js, HTML/CSS, JavaScript, GitHub Pages
