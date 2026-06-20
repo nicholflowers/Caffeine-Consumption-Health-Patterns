@@ -20,7 +20,7 @@ Caffeine is one of the most widely consumed stimulants in the world, but its rel
 
 ## 🎨 The Visualization
 
-The centerpiece is a human body silhouette that responds in real time to user input. As users adjust caffeine intake, sleep hours, age, smoking status, alcohol use, and physical activity, the silhouette reflects the predicted stress level through a color gradient from blue (low stress) to amber to red (high stress). The color extends across the head, arms, and hands to make the mapping intuitive at a glance.
+The interactive visualization is a human body silhouette that responds in real time to user input. As users adjust caffeine intake, sleep hours, age, smoking status, alcohol use, and physical activity, the silhouette reflects the predicted stress level through a color gradient from blue (low stress) to amber to red (high stress). The color extends across the head, arms, and hands to make the mapping intuitive at a glance.
 
 Animated coffee particles flow through the body, scaling in quantity with caffeine intake, and smoker status triggers visible smoke particles. At high stress levels, the silhouette pulses with a glow effect. The goal was to make the data feel embodied rather than abstract, so users could immediately see how changing one variable shifts the outcome.
 
