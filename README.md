@@ -40,7 +40,7 @@ The dashboard gave way to the interactive silhouette, driven by a core design qu
 
 ### 🔹 Usability Study
 
-Twelve user interviews (three per team member) generated 41 feedback items, which were prioritized with the MoSCoW framework to separate the must-fix issues from lower-priority refinements.
+Twelve user interviews generated 41 feedback items, which were prioritized with the MoSCoW framework to separate the must-fix issues from lower-priority refinements.
 
 ### 🔹 Iteration 3: Usability-Driven Refinements
 
