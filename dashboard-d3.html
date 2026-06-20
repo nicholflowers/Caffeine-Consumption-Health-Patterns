@@ -1,0 +1,1142 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Coffee Health Analytics Dashboard</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: white;
+        }
+
+        h1 {
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-top: 0;
+        }
+
+        .controls {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .control-grid {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 150px;
+        }
+
+        .control-group label {
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 15px;
+        }
+
+        .panel {
+            border: 1px solid #ddd;
+            padding: 15px;
+        }
+
+        .panel-title {
+            font-weight: bold;
+            margin: 0 0 12px;
+        }
+
+        .panel-lg {
+            grid-column: span 8;
+        }
+
+        .panel-md {
+            grid-column: span 6;
+        }
+
+        .panel-sm {
+            grid-column: span 4;
+        }
+
+        .panel-full {
+            grid-column: span 12;
+        }
+
+        .metric-card {
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .metric-delta {
+            font-size: 11px;
+            margin-top: 4px;
+        }
+
+        .metric-delta.positive {
+            color: #d00;
+        }
+
+        .metric-delta.negative {
+            color: #080;
+        }
+
+        svg {
+            overflow: visible;
+        }
+
+        .axis path,
+        .axis line {
+            stroke: #ddd;
+            shape-rendering: crispEdges;
+        }
+
+        .axis text {
+            fill: #666;
+        }
+
+        .grid line {
+            stroke: #eee;
+            stroke-opacity: 0.7;
+        }
+
+        .tooltip {
+            position: absolute;
+            padding: 6px 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 1000;
+        }
+
+        @media (max-width: 1024px) {
+            .panel-lg,
+            .panel-md,
+            .panel-sm {
+                grid-column: span 12;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Coffee Health Analytics Dashboard</h1>
+        <p class="subtitle">Interactive analysis of caffeine consumption and health metrics</p>
+    </div>
+
+    <div class="controls">
+        <div class="control-grid">
+            <div class="control-group">
+                <label>Country</label>
+                <select id="country">
+                    <option value="">All Countries</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Age Range</label>
+                <select id="ageRange">
+                    <option value="">All Ages</option>
+                    <option value="18-30">18-30</option>
+                    <option value="31-45">31-45</option>
+                    <option value="46-60">46-60</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Gender</label>
+                <select id="gender">
+                    <option value="">All</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Caffeine Range (mg)</label>
+                <input type="range" id="caffeineMax" min="100" max="800" step="50" value="800">
+                <span id="caffeineLabel" style="font-size: 11px; color: #6c757d;">0-800 mg</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard">
+        <div class="panel panel-sm">
+            <div class="metric-card">
+                <div id="avgStress" class="metric-value">--</div>
+                <div class="metric-label">Average Stress Level</div>
+                <div id="stressDelta" class="metric-delta"></div>
+            </div>
+        </div>
+        <div class="panel panel-sm">
+            <div class="metric-card">
+                <div id="avgCaffeine" class="metric-value">--</div>
+                <div class="metric-label">Avg Caffeine (mg)</div>
+                <div id="caffeineDelta" class="metric-delta"></div>
+            </div>
+        </div>
+        <div class="panel panel-sm">
+            <div class="metric-card">
+                <div id="avgSleep" class="metric-value">--</div>
+                <div class="metric-label">Avg Sleep (hours)</div>
+                <div id="sleepDelta" class="metric-delta"></div>
+            </div>
+        </div>
+
+        <div class="panel panel-lg">
+            <h2 class="panel-title">Caffeine vs Stress Correlation</h2>
+            <svg id="scatterPlot" width="100%" height="320"></svg>
+        </div>
+
+        <div class="panel panel-sm">
+            <h2 class="panel-title">Stress Distribution</h2>
+            <svg id="stressHist" width="100%" height="320"></svg>
+        </div>
+
+        <div class="panel panel-md">
+            <h2 class="panel-title">Sleep Quality Impact</h2>
+            <svg id="sleepChart" width="100%" height="280"></svg>
+        </div>
+
+        <div class="panel panel-md">
+            <h2 class="panel-title">Activity Level Effects</h2>
+            <svg id="activityChart" width="100%" height="280"></svg>
+        </div>
+
+        <div class="panel panel-md">
+            <h2 class="panel-title">Coffee Type Caffeine Content</h2>
+            <svg id="coffeeTypes" width="100%" height="320"></svg>
+        </div>
+
+        <div class="panel panel-md">
+            <h2 class="panel-title">Country Comparison Matrix</h2>
+            <svg id="heatmap" width="100%" height="320"></svg>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <script>
+        let rawData = [];
+        let filteredData = [];
+        let baselineData = [];
+
+        const stressMap = {
+            'very low': 10, 'low': 25, 'medium': 50, 'high': 75, 'very high': 90,
+            'vl': 10, 'l': 25, 'm': 50, 'h': 75, 'vh': 90
+        };
+
+        function parseValue(val) {
+            const n = +val;
+            if (!isNaN(n)) return n;
+            const str = String(val || '').trim().toLowerCase();
+            if (str.endsWith('%')) {
+                const p = +str.slice(0, -1);
+                return isNaN(p) ? NaN : p;
+            }
+            return stressMap[str] ?? NaN;
+        }
+
+        function parseData(rows) {
+            return rows.map(d => ({
+                age: +d.Age,
+                gender: d.Gender,
+                country: d.Country,
+                caffeine: +d.Caffeine_mg,
+                sleep: +d.Sleep_Hours,
+                stress: parseValue(d.Stress_Level),
+                activity: +d.Physical_Activity_Hours,
+                smoking: d.Smoking === '1' || d.Smoking === 'Y',
+                alcohol: d.Alcohol_Consumption === '1' || d.Alcohol_Consumption === 'Y'
+            })).filter(d =>
+                !isNaN(d.age) && !isNaN(d.caffeine) &&
+                !isNaN(d.stress) && !isNaN(d.sleep)
+            );
+        }
+
+        function applyFilters() {
+            const country = document.getElementById('country').value;
+            const ageRange = document.getElementById('ageRange').value;
+            const gender = document.getElementById('gender').value;
+            const caffeineMax = +document.getElementById('caffeineMax').value;
+
+            filteredData = rawData.filter(d => {
+                if (country && d.country !== country) return false;
+                if (gender && d.gender !== gender) return false;
+                if (d.caffeine > caffeineMax) return false;
+
+                if (ageRange) {
+                    const [min, max] = ageRange.split('-').map(Number);
+                    if (d.age < min || d.age > max) return false;
+                }
+
+                return true;
+            });
+
+            updateDashboard();
+        }
+
+        function updateMetrics() {
+            const avgStress = d3.mean(filteredData, d => d.stress);
+            const avgCaffeine = d3.mean(filteredData, d => d.caffeine);
+            const avgSleep = d3.mean(filteredData, d => d.sleep);
+
+            const baseStress = d3.mean(baselineData, d => d.stress);
+            const baseCaffeine = d3.mean(baselineData, d => d.caffeine);
+            const baseSleep = d3.mean(baselineData, d => d.sleep);
+
+            document.getElementById('avgStress').textContent = avgStress.toFixed(1);
+            document.getElementById('avgCaffeine').textContent = Math.round(avgCaffeine);
+            document.getElementById('avgSleep').textContent = avgSleep.toFixed(1);
+
+            const stressDelta = ((avgStress - baseStress) / baseStress * 100);
+            const caffeineDelta = ((avgCaffeine - baseCaffeine) / baseCaffeine * 100);
+            const sleepDelta = ((avgSleep - baseSleep) / baseSleep * 100);
+
+            document.getElementById('stressDelta').textContent =
+                `${stressDelta > 0 ? '+' : ''}${stressDelta.toFixed(1)}% vs baseline`;
+            document.getElementById('stressDelta').className =
+                `metric-delta ${stressDelta > 0 ? 'positive' : 'negative'}`;
+
+            document.getElementById('caffeineDelta').textContent =
+                `${caffeineDelta > 0 ? '+' : ''}${caffeineDelta.toFixed(1)}% vs baseline`;
+            document.getElementById('caffeineDelta').className =
+                `metric-delta ${caffeineDelta > 0 ? 'positive' : 'negative'}`;
+
+            document.getElementById('sleepDelta').textContent =
+                `${sleepDelta > 0 ? '+' : ''}${sleepDelta.toFixed(1)}% vs baseline`;
+            document.getElementById('sleepDelta').className =
+                `metric-delta ${sleepDelta > 0 ? 'negative' : 'positive'}`;
+        }
+
+        function createScatterPlot() {
+            const svg = d3.select('#scatterPlot');
+            const node = svg.node();
+            const containerWidth = node.getBoundingClientRect().width;
+            const margin = {top: 20, right: 20, bottom: 50, left: 50};
+            const width = containerWidth - margin.left - margin.right;
+            const height = 320 - margin.top - margin.bottom;
+
+            svg.selectAll('*').remove();
+
+            const g = svg.append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+
+            const x = d3.scaleLinear()
+                .domain([0, d3.max(filteredData, d => d.caffeine)])
+                .range([0, width]);
+
+            const y = d3.scaleLinear()
+                .domain([0, 100])
+                .range([height, 0]);
+
+            const colorScale = d3.scaleOrdinal()
+                .domain(['Male', 'Female'])
+                .range(['#3b82f6', '#ec4899']);
+
+            g.append('g')
+                .attr('class', 'grid')
+                .attr('transform', `translate(0,${height})`)
+                .call(d3.axisBottom(x).tickSize(-height).tickFormat(''));
+
+            g.append('g')
+                .attr('class', 'grid')
+                .call(d3.axisLeft(y).tickSize(-width).tickFormat(''));
+
+            const circles = g.selectAll('circle')
+                .data(filteredData)
+                .join('circle')
+                .attr('cx', d => x(d.caffeine))
+                .attr('cy', d => y(d.stress))
+                .attr('r', 0)
+                .attr('fill', d => colorScale(d.gender))
+                .attr('opacity', 0.6)
+                .style('cursor', 'pointer');
+
+            circles.transition()
+                .duration(600)
+                .attr('r', 4);
+
+            const tooltip = d3.select('#tooltip');
+
+            circles
+                .on('mouseover', (event, d) => {
+                    d3.select(event.target)
+                        .transition().duration(150)
+                        .attr('r', 6)
+                        .attr('opacity', 1);
+
+                    tooltip
+                        .style('opacity', 1)
+                        .html(`
+                            <div><strong>${d.country}</strong></div>
+                            <div>Caffeine: ${d.caffeine.toFixed(0)} mg</div>
+                            <div>Stress: ${d.stress.toFixed(1)}</div>
+                            <div>Sleep: ${d.sleep.toFixed(1)} hrs</div>
+                            <div>Age: ${d.age}</div>
+                        `)
+                        .style('left', (event.pageX + 10) + 'px')
+                        .style('top', (event.pageY - 10) + 'px');
+                })
+                .on('mouseout', (event) => {
+                    d3.select(event.target)
+                        .transition().duration(150)
+                        .attr('r', 4)
+                        .attr('opacity', 0.6);
+
+                    tooltip.style('opacity', 0);
+                });
+
+            const regression = calculateLinearRegression(
+                filteredData.map(d => d.caffeine),
+                filteredData.map(d => d.stress)
+            );
+
+            const line = d3.line()
+                .x(d => x(d[0]))
+                .y(d => y(d[1]));
+
+            const xExtent = d3.extent(filteredData, d => d.caffeine);
+            const lineData = [
+                [xExtent[0], regression.slope * xExtent[0] + regression.intercept],
+                [xExtent[1], regression.slope * xExtent[1] + regression.intercept]
+            ];
+
+            g.append('path')
+                .datum(lineData)
+                .attr('fill', 'none')
+                .attr('stroke', '#dc3545')
+                .attr('stroke-width', 2)
+                .attr('stroke-dasharray', '4,4')
+                .attr('d', line)
+                .attr('opacity', 0)
+                .transition()
+                .duration(800)
+                .attr('opacity', 0.7);
+
+            g.append('g')
+                .attr('class', 'axis')
+                .attr('transform', `translate(0,${height})`)
+                .call(d3.axisBottom(x));
+
+            g.append('g')
+                .attr('class', 'axis')
+                .call(d3.axisLeft(y));
+
+            g.append('text')
+                .attr('class', 'axis-label')
+                .attr('text-anchor', 'middle')
+                .attr('x', width / 2)
+                .attr('y', height + 40)
+                .text('Caffeine Intake (mg)');
+
+            g.append('text')
+                .attr('class', 'axis-label')
+                .attr('text-anchor', 'middle')
+                .attr('transform', 'rotate(-90)')
+                .attr('x', -height / 2)
+                .attr('y', -35)
+                .text('Stress Level');
+
+            const legend = g.append('g')
+                .attr('class', 'legend')
+                .attr('transform', `translate(${width - 100}, 10)`);
+
+            ['Male', 'Female'].forEach((gender, i) => {
+                const lg = legend.append('g')
+                    .attr('transform', `translate(0, ${i * 20})`);
+
+                lg.append('circle')
+                    .attr('r', 4)
+                    .attr('fill', colorScale(gender));
+
+                lg.append('text')
+                    .attr('x', 10)
+                    .attr('y', 4)
+                    .text(gender);
+            });
+
+            g.append('text')
+                .attr('class', 'legend')
+                .attr('x', width - 100)
+                .attr('y', 60)
+                .attr('fill', '#6c757d')
+                .text(`R² = ${regression.r2.toFixed(3)}`);
+        }
+
+        function calculateLinearRegression(x, y) {
+            const n = x.length;
+            const sumX = d3.sum(x);
+            const sumY = d3.sum(y);
+            const sumXY = d3.sum(x.map((xi, i) => xi * y[i]));
+            const sumX2 = d3.sum(x.map(xi => xi * xi));
+
+            const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+            const intercept = (sumY - slope * sumX) / n;
+
+            const yMean = d3.mean(y);
+            const ssRes = d3.sum(y.map((yi, i) => Math.pow(yi - (slope * x[i] + intercept), 2)));
+            const ssTot = d3.sum(y.map(yi => Math.pow(yi - yMean, 2)));
+            const r2 = 1 - (ssRes / ssTot);
+
+            return {slope, intercept, r2};
+        }
+
+        function createStressHistogram() {
+            const svg = d3.select('#stressHist');
+            const node = svg.node();
+            const containerWidth = node.getBoundingClientRect().width;
+            const margin = {top: 20, right: 20, bottom: 50, left: 40};
+            const width = containerWidth - margin.left - margin.right;
+            const height = 320 - margin.top - margin.bottom;
+
+            svg.selectAll('*').remove();
+
+            const g = svg.append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+
+            const bins = d3.bin()
+                .domain([0, 100])
+                .thresholds(10)
+                (filteredData.map(d => d.stress));
+
+            const x = d3.scaleBand()
+                .domain(bins.map((d, i) => i))
+                .range([0, width])
+                .padding(0.1);
+
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(bins, d => d.length)])
+                .range([height, 0]);
+
+            const colorScale = d3.scaleLinear()
+                .domain([0, 50, 100])
+                .range(['#22c55e', '#fbbf24', '#ef4444']);
+
+            g.selectAll('rect')
+                .data(bins)
+                .join('rect')
+                .attr('x', (d, i) => x(i))
+                .attr('width', x.bandwidth())
+                .attr('y', height)
+                .attr('height', 0)
+                .attr('fill', d => colorScale((d.x0 + d.x1) / 2))
+                .attr('opacity', 0.8)
+                .transition()
+                .duration(600)
+                .attr('y', d => y(d.length))
+                .attr('height', d => height - y(d.length));
+
+            g.append('g')
+                .attr('class', 'axis')
+                .attr('transform', `translate(0,${height})`)
+                .call(d3.axisBottom(x).tickFormat((d, i) => {
+                    const bin = bins[i];
+                    return bin ? Math.round(bin.x0) : '';
+                }));
+
+            g.append('g')
+                .attr('class', 'axis')
+                .call(d3.axisLeft(y));
+
+            g.append('text')
+                .attr('class', 'axis-label')
+                .attr('text-anchor', 'middle')
+                .attr('x', width / 2)
+                .attr('y', height + 40)
+                .text('Stress Level');
+
+            g.append('text')
+                .attr('class', 'axis-label')
+                .attr('text-anchor', 'middle')
+                .attr('transform', 'rotate(-90)')
+                .attr('x', -height / 2)
+                .attr('y', -30)
+                .text('Count');
+        }
+
+        function createSleepChart() {
+            const svg = d3.select('#sleepChart');
+            const node = svg.node();
+            const containerWidth = node.getBoundingClientRect().width;
+            const margin = {top: 20, right: 20, bottom: 50, left: 50};
+            const width = containerWidth - margin.left - margin.right;
+            const height = 280 - margin.top - margin.bottom;
+
+            svg.selectAll('*').remove();
+
+            const g = svg.append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+
+            const sleepBins = d3.groups(filteredData, d => Math.floor(d.sleep * 2) / 2)
+                .map(([key, values]) => ({
+                    sleep: key,
+                    avgStress: d3.mean(values, v => v.stress),
+                    count: values.length
+                }))
+                .sort((a, b) => a.sleep - b.sleep);
+
+            const x = d3.scaleLinear()
+                .domain(d3.extent(sleepBins, d => d.sleep))
+                .range([0, width]);
+
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(sleepBins, d => d.avgStress)])
+                .range([height, 0]);
+
+            const line = d3.line()
+                .x(d => x(d.sleep))
+                .y(d => y(d.avgStress))
+                .curve(d3.curveMonotoneX);
+
+            const area = d3.area()
+                .x(d => x(d.sleep))
+                .y0(height)
+                .y1(d => y(d.avgStress))
+                .curve(d3.curveMonotoneX);
+
+            g.append('path')
+                .datum(sleepBins)
+                .attr('fill', '#3b82f6')
+                .attr('opacity', 0.2)
+                .attr('d', area);
+
+            const path = g.append('path')
+                .datum(sleepBins)
+                .attr('fill', 'none')
+                .attr('stroke', '#3b82f6')
+                .attr('stroke-width', 2.5)
+                .attr('d', line);
+
+            const pathLength = path.node().getTotalLength();
+            path
+                .attr('stroke-dasharray', pathLength)
+                .attr('stroke-dashoffset', pathLength)
+                .transition()
+                .duration(1000)
+                .attr('stroke-dashoffset', 0);
+
+            g.selectAll('circle')
+                .data(sleepBins.filter(d => d.count > 5))
+                .join('circle')
+                .attr('cx', d => x(d.sleep))
+                .attr('cy', d => y(d.avgStress))
+                .attr('r', 0)
+                .attr('fill', '#3b82f6')
+                .transition()
+                .delay(1000)
+                .duration(400)
+                .attr('r', 4);
+
+            g.append('g')
+                .attr('class', 'axis')
+                .attr('transform', `translate(0,${height})`)
+                .call(d3.axisBottom(x));
+
+            g.append('g')
+                .attr('class', 'axis')
+                .call(d3.axisLeft(y));
+
+            g.append('text')
+                .attr('class', 'axis-label')
+                .attr('text-anchor', 'middle')
+                .attr('x', width / 2)
+                .attr('y', height + 40)
+                .text('Sleep Duration (hours)');
+
+            g.append('text')
+                .attr('class', 'axis-label')
+                .attr('text-anchor', 'middle')
+                .attr('transform', 'rotate(-90)')
+                .attr('x', -height / 2)
+                .attr('y', -35)
+                .text('Average Stress Level');
+        }
+
+        function createActivityChart() {
+            const svg = d3.select('#activityChart');
+            const node = svg.node();
+            const containerWidth = node.getBoundingClientRect().width;
+            const margin = {top: 20, right: 20, bottom: 50, left: 50};
+            const width = containerWidth - margin.left - margin.right;
+            const height = 280 - margin.top - margin.bottom;
+
+            svg.selectAll('*').remove();
+
+            const g = svg.append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+
+            const activityGroups = d3.groups(filteredData, d => {
+                if (d.activity < 2) return '< 2h';
+                if (d.activity < 5) return '2-5h';
+                if (d.activity < 10) return '5-10h';
+                return '10h+';
+            }).map(([key, values]) => ({
+                range: key,
+                avgStress: d3.mean(values, v => v.stress),
+                avgCaffeine: d3.mean(values, v => v.caffeine),
+                count: values.length
+            }));
+
+            const ranges = ['< 2h', '2-5h', '5-10h', '10h+'];
+            activityGroups.sort((a, b) => ranges.indexOf(a.range) - ranges.indexOf(b.range));
+
+            const x = d3.scaleBand()
+                .domain(activityGroups.map(d => d.range))
+                .range([0, width])
+                .padding(0.3);
+
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(activityGroups, d => Math.max(d.avgStress, d.avgCaffeine / 5))])
+                .range([height, 0]);
+
+            const barWidth = x.bandwidth() / 2;
+
+            const stressBars = g.selectAll('.stress-bar')
+                .data(activityGroups)
+                .join('rect')
+                .attr('class', 'stress-bar')
+                .attr('x', d => x(d.range))
+                .attr('width', barWidth)
+                .attr('y', height)
+                .attr('height', 0)
+                .attr('fill', '#ef4444')
+                .attr('opacity', 0.8);
+
+            stressBars.transition()
+                .duration(600)
+                .attr('y', d => y(d.avgStress))
+                .attr('height', d => height - y(d.avgStress));
+
+            const caffeineBars = g.selectAll('.caffeine-bar')
+                .data(activityGroups)
+                .join('rect')
+                .attr('class', 'caffeine-bar')
+                .attr('x', d => x(d.range) + barWidth)
+                .attr('width', barWidth)
+                .attr('y', height)
+                .attr('height', 0)
+                .attr('fill', '#3b82f6')
+                .attr('opacity', 0.8);
+
+            caffeineBars.transition()
+                .duration(600)
+                .delay(200)
+                .attr('y', d => y(d.avgCaffeine / 5))
+                .attr('height', d => height - y(d.avgCaffeine / 5));
+
+            g.append('g')
+                .attr('class', 'axis')
+                .attr('transform', `translate(0,${height})`)
+                .call(d3.axisBottom(x));
+
+            g.append('g')
+                .attr('class', 'axis')
+                .call(d3.axisLeft(y));
+
+            g.append('text')
+                .attr('class', 'axis-label')
+                .attr('text-anchor', 'middle')
+                .attr('x', width / 2)
+                .attr('y', height + 40)
+                .text('Physical Activity (hours/day)');
+
+            g.append('text')
+                .attr('class', 'axis-label')
+                .attr('text-anchor', 'middle')
+                .attr('transform', 'rotate(-90)')
+                .attr('x', -height / 2)
+                .attr('y', -35)
+                .text('Scaled Value');
+
+            const legend = g.append('g')
+                .attr('class', 'legend')
+                .attr('transform', `translate(${width - 140}, 10)`);
+
+            [{label: 'Stress', color: '#ef4444'}, {label: 'Caffeine (÷5)', color: '#3b82f6'}]
+                .forEach((item, i) => {
+                    const lg = legend.append('g')
+                        .attr('transform', `translate(0, ${i * 18})`);
+
+                    lg.append('rect')
+                        .attr('width', 12)
+                        .attr('height', 12)
+                        .attr('fill', item.color)
+                        .attr('opacity', 0.8);
+
+                    lg.append('text')
+                        .attr('x', 18)
+                        .attr('y', 9)
+                        .text(item.label);
+                });
+        }
+
+        function createHeatmap() {
+            const svg = d3.select('#heatmap');
+            const node = svg.node();
+            const containerWidth = node.getBoundingClientRect().width;
+            const margin = {top: 20, right: 80, bottom: 80, left: 120};
+            const width = containerWidth - margin.left - margin.right;
+            const height = 320 - margin.top - margin.bottom;
+
+            svg.selectAll('*').remove();
+
+            const g = svg.append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+
+            const countryStats = d3.rollup(
+                filteredData,
+                values => ({
+                    stress: d3.mean(values, v => v.stress),
+                    caffeine: d3.mean(values, v => v.caffeine),
+                    sleep: d3.mean(values, v => v.sleep),
+                    count: values.length
+                }),
+                d => d.country
+            );
+
+            const countries = Array.from(countryStats.keys())
+                .sort()
+                .slice(0, 12);
+
+            const metrics = ['Stress', 'Caffeine', 'Sleep'];
+
+            const data = [];
+            countries.forEach(country => {
+                const stats = countryStats.get(country);
+                data.push({country, metric: 'Stress', value: stats.stress, normalized: stats.stress / 100});
+                data.push({country, metric: 'Caffeine', value: stats.caffeine, normalized: stats.caffeine / 800});
+                data.push({country, metric: 'Sleep', value: stats.sleep, normalized: (10 - stats.sleep) / 10});
+            });
+
+            const x = d3.scaleBand()
+                .domain(metrics)
+                .range([0, width])
+                .padding(0.05);
+
+            const y = d3.scaleBand()
+                .domain(countries)
+                .range([0, height])
+                .padding(0.05);
+
+            const colorScale = d3.scaleSequential()
+                .domain([0, 1])
+                .interpolator(d3.interpolateRdYlGn);
+
+            const cells = g.selectAll('rect')
+                .data(data)
+                .join('rect')
+                .attr('x', d => x(d.metric))
+                .attr('y', d => y(d.country))
+                .attr('width', x.bandwidth())
+                .attr('height', y.bandwidth())
+                .attr('fill', d => colorScale(1 - d.normalized))
+                .attr('opacity', 0);
+
+            cells.transition()
+                .duration(600)
+                .delay((d, i) => i * 10)
+                .attr('opacity', 1);
+
+            const tooltip = d3.select('#tooltip');
+
+            cells
+                .on('mouseover', (event, d) => {
+                    d3.select(event.target)
+                        .attr('stroke', '#212529')
+                        .attr('stroke-width', 2);
+
+                    tooltip
+                        .style('opacity', 1)
+                        .html(`
+                            <div><strong>${d.country}</strong></div>
+                            <div>${d.metric}: ${d.value.toFixed(1)}</div>
+                        `)
+                        .style('left', (event.pageX + 10) + 'px')
+                        .style('top', (event.pageY - 10) + 'px');
+                })
+                .on('mouseout', (event) => {
+                    d3.select(event.target)
+                        .attr('stroke', 'none');
+
+                    tooltip.style('opacity', 0);
+                });
+
+            g.append('g')
+                .attr('class', 'axis')
+                .attr('transform', `translate(0,${height})`)
+                .call(d3.axisBottom(x));
+
+            g.append('g')
+                .attr('class', 'axis')
+                .call(d3.axisLeft(y));
+
+            const legendWidth = 20;
+            const legendHeight = height;
+
+            const legendScale = d3.scaleLinear()
+                .domain([0, legendHeight])
+                .range([1, 0]);
+
+            const legendAxis = d3.axisRight(legendScale)
+                .ticks(5)
+                .tickFormat(d => ['Low', '', 'Med', '', 'High'][Math.round(d * 4)]);
+
+            const legend = g.append('g')
+                .attr('transform', `translate(${width + 20}, 0)`);
+
+            const gradient = svg.append('defs')
+                .append('linearGradient')
+                .attr('id', 'legend-gradient')
+                .attr('x1', '0%')
+                .attr('y1', '0%')
+                .attr('x2', '0%')
+                .attr('y2', '100%');
+
+            const numStops = 10;
+            for (let i = 0; i <= numStops; i++) {
+                gradient.append('stop')
+                    .attr('offset', `${i / numStops * 100}%`)
+                    .attr('stop-color', colorScale(1 - i / numStops));
+            }
+
+            legend.append('rect')
+                .attr('width', legendWidth)
+                .attr('height', legendHeight)
+                .style('fill', 'url(#legend-gradient)');
+
+            legend.append('g')
+                .attr('class', 'axis')
+                .attr('transform', `translate(${legendWidth}, 0)`)
+                .call(legendAxis);
+        }
+
+        function createCoffeeTypesChart(coffeeData) {
+            const svg = d3.select('#coffeeTypes');
+            const node = svg.node();
+            const containerWidth = node.getBoundingClientRect().width;
+            const margin = {top: 20, right: 80, bottom: 50, left: 60};
+            const width = containerWidth - margin.left - margin.right;
+            const height = 320 - margin.top - margin.bottom;
+
+            svg.selectAll('*').remove();
+
+            const g = svg.append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+
+            const validCoffees = coffeeData.filter(d => d.size > 0);
+
+            const x = d3.scaleLinear()
+                .domain([0, d3.max(validCoffees, d => d.caffeine)])
+                .range([0, width]);
+
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(validCoffees, d => d.size)])
+                .range([height, 0]);
+
+            const caffeinePerOz = validCoffees.map(d => d.caffeine / d.size);
+            const colorScale = d3.scaleSequential()
+                .domain([d3.min(caffeinePerOz), d3.max(caffeinePerOz)])
+                .interpolator(d3.interpolateYlOrBr);
+
+            g.append('g')
+                .attr('class', 'grid')
+                .attr('transform', `translate(0,${height})`)
+                .call(d3.axisBottom(x).tickSize(-height).tickFormat(''));
+
+            g.append('g')
+                .attr('class', 'grid')
+                .call(d3.axisLeft(y).tickSize(-width).tickFormat(''));
+
+            const circles = g.selectAll('circle')
+                .data(validCoffees)
+                .join('circle')
+                .attr('cx', d => x(d.caffeine))
+                .attr('cy', d => y(d.size))
+                .attr('r', 0)
+                .attr('fill', d => colorScale(d.caffeine / d.size))
+                .attr('opacity', 0.7)
+                .attr('stroke', '#333')
+                .attr('stroke-width', 0.5)
+                .style('cursor', 'pointer');
+
+            circles.transition()
+                .duration(600)
+                .delay((d, i) => i * 20)
+                .attr('r', 5);
+
+            g.append('g')
+                .attr('class', 'axis')
+                .attr('transform', `translate(0,${height})`)
+                .call(d3.axisBottom(x));
+
+            g.append('g')
+                .attr('class', 'axis')
+                .call(d3.axisLeft(y));
+
+            g.append('text')
+                .attr('class', 'axis-label')
+                .attr('text-anchor', 'middle')
+                .attr('x', width / 2)
+                .attr('y', height + 40)
+                .style('font-size', '11px')
+                .style('fill', '#666')
+                .text('Caffeine (mg)');
+
+            g.append('text')
+                .attr('class', 'axis-label')
+                .attr('text-anchor', 'middle')
+                .attr('transform', 'rotate(-90)')
+                .attr('x', -height / 2)
+                .attr('y', -45)
+                .style('font-size', '11px')
+                .style('fill', '#666')
+                .text('Serving Size (oz)');
+
+            const legend = g.append('g')
+                .attr('transform', `translate(${width + 15}, ${height / 2 - 40})`);
+
+            legend.append('text')
+                .attr('x', 0)
+                .attr('y', -10)
+                .style('font-size', '10px')
+                .style('fill', '#666')
+                .text('mg/oz');
+
+            const legendGradient = svg.append('defs')
+                .append('linearGradient')
+                .attr('id', 'coffee-legend-gradient')
+                .attr('x1', '0%')
+                .attr('y1', '100%')
+                .attr('x2', '0%')
+                .attr('y2', '0%');
+
+            const numStops = 5;
+            for (let i = 0; i <= numStops; i++) {
+                const t = i / numStops;
+                legendGradient.append('stop')
+                    .attr('offset', `${t * 100}%`)
+                    .attr('stop-color', colorScale(
+                        d3.min(caffeinePerOz) + t * (d3.max(caffeinePerOz) - d3.min(caffeinePerOz))
+                    ));
+            }
+
+            legend.append('rect')
+                .attr('width', 15)
+                .attr('height', 80)
+                .style('fill', 'url(#coffee-legend-gradient)');
+
+            const tooltip = d3.select('#tooltip');
+
+            circles
+                .on('mouseover', function(event, d) {
+                    d3.select(this)
+                        .transition().duration(100)
+                        .attr('r', 7)
+                        .attr('opacity', 1);
+
+                    tooltip
+                        .style('opacity', 1)
+                        .html(`
+                            <div><strong>${d.name}</strong></div>
+                            <div>Caffeine: ${d.caffeine.toFixed(0)} mg</div>
+                            <div>Size: ${d.size} oz</div>
+                            <div>Concentration: ${(d.caffeine / d.size).toFixed(1)} mg/oz</div>
+                        `)
+                        .style('left', (event.pageX + 10) + 'px')
+                        .style('top', (event.pageY - 10) + 'px');
+                })
+                .on('mouseout', function() {
+                    d3.select(this)
+                        .transition().duration(100)
+                        .attr('r', 5)
+                        .attr('opacity', 0.7);
+
+                    tooltip.style('opacity', 0);
+                });
+        }
+
+        function updateDashboard() {
+            updateMetrics();
+            createScatterPlot();
+            createStressHistogram();
+            createSleepChart();
+            createActivityChart();
+            createHeatmap();
+        }
+
+        Promise.all([
+            d3.csv('synthetic_coffee_health_10000.csv'),
+            d3.csv('coffee_types.csv')
+        ]).then(([healthRows, coffeeRows]) => {
+            const coffeeData = coffeeRows.map(d => {
+                const minCaf = +d.caffeine_mg_min;
+                const maxCaf = +d.caffeine_mg_max;
+                const caffeine = (minCaf + maxCaf) / 2;
+
+                const minSize = +d.size_oz_min;
+                const maxSize = +d.size_oz_max;
+                const size = maxSize || minSize || 0;
+
+                return {
+                    name: d.brand_product,
+                    category: d.category,
+                    caffeine: caffeine,
+                    size: size
+                };
+            }).filter(d => !isNaN(d.caffeine));
+
+            createCoffeeTypesChart(coffeeData);
+
+            rawData = parseData(healthRows);
+            filteredData = rawData;
+            baselineData = rawData;
+
+            const countries = Array.from(new Set(rawData.map(d => d.country))).sort();
+            const countrySelect = document.getElementById('country');
+            countries.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c;
+                opt.textContent = c;
+                countrySelect.appendChild(opt);
+            });
+
+            document.getElementById('country').addEventListener('change', applyFilters);
+            document.getElementById('ageRange').addEventListener('change', applyFilters);
+            document.getElementById('gender').addEventListener('change', applyFilters);
+            document.getElementById('caffeineMax').addEventListener('input', (e) => {
+                document.getElementById('caffeineLabel').textContent = `0-${e.target.value} mg`;
+                applyFilters();
+            });
+
+            updateDashboard();
+
+            window.addEventListener('resize', () => {
+                updateDashboard();
+            });
+        });
+    </script>
+</body>
+</html>

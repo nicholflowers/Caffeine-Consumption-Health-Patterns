@@ -1,0 +1,1305 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Interactive Silhouette (D3) — Coffee Effects on Body</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+            background: #fafafa;
+            /* allow vertical scroll, but no horizontal scroll */
+            overflow-x: hidden;
+            overflow-y: auto
+       }
+
+        :root {
+            --panel-w: 380px;
+        }
+
+        body {
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+            background: #fafafa;
+            padding: 16px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 22px;
+            margin: 0 0 12px;
+        }
+
+        /* Top explanation bar spans full width */
+        .intro-card {
+            width: 100%;              /* new */
+            box-sizing: border-box;   /* new */
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            padding: 14px 16px 12px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: #4b5563;
+        }
+
+
+        .intro-card-top {
+            display: grid;
+            grid-template-columns: minmax(0, 3fr) minmax(0, 4fr);
+            gap: 18px;
+            align-items: flex-start;
+        }
+
+        .intro-about-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .intro-about-text {
+            line-height: 1.45;
+        }
+
+        .intro-right-block {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .intro-text {
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        /* Layout for controls + viz */
+        .app {
+            display: grid;
+            grid-template-columns: minmax(280px, var(--panel-w)) 1fr;
+            gap: 16px;
+            margin-top: 16px;
+            align-items: stretch;
+        }
+
+        .panel {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px;
+            position: relative;
+            z-index: 10;
+            overflow-y: auto;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            margin: 12px 0 6px;
+            color: #374151;
+        }
+
+        input[type=range],
+        input[type=number],
+        select {
+            width: 100%;
+        }
+
+        input[type=number] {
+            padding: 6px 8px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+
+        select {
+            padding: 6px 8px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        .row {
+            display: grid;
+            gap: 10px;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .viz-shell {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            min-height: 480px;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .viz-legend {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+            font-size: 11px;
+            color: #4b5563;
+            max-width: 210px;
+        }
+
+        .viz-legend-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .viz-legend-bar {
+            height: 8px;
+            border-radius: 9999px;
+            background: linear-gradient(to right, #3b82f6, #f59e0b, #dc2626);
+            margin-bottom: 6px;
+        }
+
+        .viz-legend-ticks {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #6b7280;
+        }
+
+        .viz-legend-ticks span {
+            padding: 0 3px;
+        }
+
+        /* Centered SVG that stays inside its card */
+        svg {
+            width: 100%;
+            height: auto;
+            max-width: 100%;
+        }
+
+        #overlays {
+            isolation: isolate;
+        }
+
+        @keyframes headPulse {
+            0% {
+                opacity: 0.18;
+            }
+
+            50% {
+                opacity: 0.48;
+            }
+
+            100% {
+                opacity: 0.18;
+            }
+        }
+
+        #headGlow.pulsing {
+            animation: headPulse 1.6s ease-in-out infinite;
+        }
+
+        .stress-banner {
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: #eef2ff;
+            border: 1px solid #c7d2fe;
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+        }
+
+        .stress-banner-title {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #4b5563;
+            font-weight: 600;
+        }
+
+        .stress-number {
+            font-size: 28px;
+            font-weight: 700;
+            color: #111827;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .breakdown-card {
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            background: #f9fafb;
+            font-size: 12px;
+            color: #4b5563;
+        }
+
+        .breakdown-title {
+            font-weight: 600;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .breakdown-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 style="font-size:28px; font-weight:700; margin-bottom:4px;">
+        Interactive Silhouette — Coffee Effects on the Body
+    </h1>
+    <div style="font-size:14px; color:#4b5563; margin-bottom:8px;">
+        Explore how caffeine intake, sleep, activity, and lifestyle factors influence predicted stress levels.
+    </div>
+
+    <!-- Top information bar -->
+    <div class="intro-card">
+        <div class="intro-card-top">
+            <!-- LEFT: Predicted stress + breakdown -->
+            <div class="intro-right-block">
+
+        
+                <div id="stressBreakdown" class="breakdown-card">
+                    <div class="breakdown-title">What’s driving your stress right now?</div>
+                    <div id="stressSummaryLine" style="margin-bottom:6px;"></div>
+                    <div id="factorList" class="breakdown-chips"></div>
+                </div>
+            </div>
+        
+            <!-- RIGHT: About the data + descriptive text -->
+            <div>
+                <div class="intro-about-title">About the data</div>
+                <div class="intro-about-text">
+                    The visualization uses a synthetic dataset of about 10,000 profiles inspired by a publicly available coffee and health
+                    dataset on Kaggle. The dataset combines self-reported coffee intake with basic health and lifestyle variables such as
+                    caffeine intake, cup size, sleep duration, physical activity, smoking and alcohol use, age, gender, country, and
+                    self-reported stress.
+                    
+                    For the interactive model, we use simple, hand-tuned rules anchored on country-level averages from this dataset to
+                    estimate stress from your chosen inputs. This is a teaching-focused, exploratory tool only and should not be interpreted
+                    as medical advice.
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Main layout -->
+    <div class="app">
+        <!-- LEFT: controls -->
+        <div class="panel">
+            <div class="stress-banner">
+                <div class="stress-banner-title">Predicted stress</div>
+                <div id="stressVal" class="stress-number">--%</div>
+            </div>
+            <label>Country</label>
+            <select id="country"></select>
+
+            <div class="row">
+                <div>
+                    <label>Age</label>
+                    <input id="age" type="number" min="10" max="100" step="1" value="35" />
+                </div>
+            </div>
+
+            <div>
+                <label>Gender</label>
+                <select id="gender">
+                    <option value="male" selected>Male</option>
+                    <option value="female">Female</option>
+                </select>
+            </div>
+
+            <label>
+                Caffeine (mg)
+                <span id="caffeineVal" style="float:right;color:#6b7280;">200 mg</span>
+            </label>
+            <input id="caffeine" type="range" min="0" max="800" step="10" value="200" />
+
+            <label>
+                Sleep (hours)
+                <span id="sleepVal" style="float:right;color:#6b7280;">7 hrs</span>
+            </label>
+            <input id="sleep" type="range" min="0" max="10" step="0.1" value="7" />
+
+            <div class="row">
+                <div>
+                    <label>Physical Activity (hrs/day)</label>
+                    <input id="activity" type="number" min="0" max="10" step="0.1" value="1" />
+                </div>
+                <div>
+                    <label>Smoker</label>
+                    <select id="smoking">
+                        <option value="N" selected>No</option>
+                        <option value="Y">Yes</option>
+                    </select>
+                </div>
+            </div>
+
+            <label>Alcohol Consumption</label>
+            <select id="alcohol">
+                <option value="N" selected>No</option>
+                <option value="Y">Yes</option>
+            </select>
+        </div>
+
+        <!-- RIGHT: viz -->
+        <div class="viz-shell">
+            <div class="viz-legend">
+                <div class="viz-legend-title">Head color → Stress level</div>
+                <div class="viz-legend-bar"></div>
+                <div class="viz-legend-ticks">
+                    <span>Low (0%)</span>
+                    <span>Mid (50%)</span>
+                    <span>High (100%)</span>
+                </div>
+            </div>
+
+            <svg id="stage" viewBox="0 0 1200 900" preserveAspectRatio="xMidYMid meet">
+                <defs>
+                    <clipPath id="headClip">
+                        <circle id="headClipCircle" cx="0" cy="0" r="0" />
+                    </clipPath>
+
+                    <filter id="smokeBlur" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur in="SourceGraphic" stdDeviation="2.2" />
+                    </filter>
+
+                    <filter id="headGlowBlur" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur in="SourceGraphic" stdDeviation="22" result="blur" />
+                        <feMerge>
+                            <feMergeNode in="blur" />
+                            <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                    </filter>
+
+                    <filter id="headOuterGlow" x="-70%" y="-70%" width="240%" height="240%"
+                        color-interpolation-filters="sRGB">
+                        <feMorphology in="SourceAlpha" operator="dilate" radius="14" result="spread" />
+                        <feGaussianBlur in="spread" stdDeviation="24" result="blur" />
+                        <feFlood flood-color="#ff2a2a" flood-opacity="0.9" result="tint" />
+                        <feComposite in="tint" in2="blur" operator="in" result="glow" />
+                        <feMerge>
+                            <feMergeNode in="glow" />
+                        </feMerge>
+                    </filter>
+
+                    <clipPath id="cupLevelClip" clipPathUnits="objectBoundingBox">
+                        <rect id="cupLevelGate" x="0" y="0.30" width="1" height="0.70"></rect>
+                    </clipPath>
+
+                    <linearGradient id="liquidGradient" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="300">
+                        <stop offset="0%" stop-color="currentCoffeeColor" stop-opacity="0" />
+                        <stop offset="50%" stop-color="currentCoffeeColor" stop-opacity="0.8" />
+                        <stop offset="100%" stop-color="currentCoffeeColor" stop-opacity="0" />
+                    </linearGradient>
+                </defs>
+
+                <g id="silhouette"></g>
+
+                <g id="overlays">
+                    <rect id="headTint" clip-path="url(#headClip)" x="0" y="0" width="1200" height="900" fill="#dbeafe"
+                        opacity="0.65"></rect>
+                    <g id="particles"></g>
+                    <g id="smoke"></g>
+                </g>
+            </svg>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <script>
+        /* ---------- Helpers ---------- */
+        const STRESS_MAP = { 'very low': 10, 'low': 25, 'medium': 50, 'high': 75, 'very high': 90, 'vl': 10, 'l': 25, 'm': 50, 'h': 75, 'vh': 90 };
+        const asNum = (v) => {
+            const n = +v; if (!Number.isNaN(n)) return n;
+            const s = (v || '').toString().trim();
+            if (s.endsWith('%')) { const p = +s.slice(0, -1); return Number.isNaN(p) ? NaN : p; }
+            const m = STRESS_MAP[s.toLowerCase()]; return m ?? NaN;
+        };
+
+        /* ---------- Controls ---------- */
+    const el = {
+        country: document.getElementById('country'),
+        age: document.getElementById('age'),
+        gender: document.getElementById('gender'),
+        caffeine: document.getElementById('caffeine'),
+        sleep: document.getElementById('sleep'),
+        activity: document.getElementById('activity'),
+        smoking: document.getElementById('smoking'),
+        alcohol: document.getElementById('alcohol'),
+        stressVal: document.getElementById('stressVal'),
+        sizeOz: document.getElementById('sizeOz'),
+        ozVal: document.getElementById('ozVal'),
+    };
+
+
+
+            function applyCoffeeSelection(name) {
+                    if (!name || name === '__custom') return;
+                    if (!coffeeRows || !coffeeRows.length) return;
+
+                    const found = coffeeRows.find(d => d.name === name);
+                    if (!found) return;
+
+                    // --- caffeine slider ---
+                    const mg = Math.round(found.mg || 0);
+                    // make sure slider max can show this drink
+                    const max = Math.max(mg, datasetCafMax || 800);
+                    el.caffeine.max = Math.ceil(max / 50) * 50;
+                    el.caffeine.value = mg;
+                    cafLabel();
+
+                    // --- cup color + animation ---
+                    currentCoffeeColor = coffeeColor(found.name);
+                    paintCupCoffee(currentCoffeeColor);
+
+                    // recompute stress / particles etc.
+                    updateEverything();
+                    setCupFillLevel(1.0, true);
+                }
+
+        // coffee type → set caffeine slider + cup color
+        // coffee type → set sliders + cup color
+            el.coffeeType?.addEventListener('change', (e) => {
+                const name = e.target.value;
+                if (name === '__custom') return;   // Custom = user-driven sliders
+                applyCoffeeSelection(name);
+            });
+
+        // Attach proper events per control
+            ['age', 'caffeine', 'sleep', 'activity'].forEach(id => {
+                el[id]?.addEventListener('input', updateEverything);
+            });
+
+
+            el.sleep?.addEventListener('input', () => {
+                    sleepLabel();
+                    updateEverything();
+                });
+
+            ['gender', 'smoking', 'alcohol'].forEach(id => {
+                el[id]?.addEventListener('change', updateEverything);
+            });
+
+            el.country?.addEventListener('change', () => {
+                updateEverything();
+            });
+
+
+
+        /* ---------- SVG refs ---------- */
+        const stage = d3.select('#stage');
+        const gSil = stage.select('#silhouette');
+        const gOv = stage.select('#overlays');
+        const particlesG = gOv.select('#particles');
+        const smokeG = gOv.select('#smoke');
+        const headTint = gOv.select('#headTint');
+        const headClipCircle = d3.select('#headClipCircle');
+
+        /* ---------- Globals after load ---------- */
+        let byCountry = [];
+        let anchors;           // anchor positions in stage space
+        let headPath = null;   // actual head node if detected
+        let cupLiquidNodes = [];
+        let flowPath = null;
+        let liquidPath = null;
+        let headGlow = null;
+        let coffeeRows = [];
+        let currentCoffeeColor = '#6f4e37';
+        let ozMaxAll = 24;
+        setCupFillLevel(1.0, false);
+        let datasetCafMax = 800;   // <— new: max mg seen in coffee CSV
+        let cigGroup = null;
+        const CIG = { len: 60, thick: 6 };   // tweak len / thick to taste
+
+
+        function updateLiquidFlow(mg) {
+            if (!flowPath || !liquidPath) return;
+                const pNode = flowPath.node();
+                const totalLen = pNode.getTotalLength();
+
+                if (mg <= 0) {
+                    liquidPath.attr('opacity', 0);
+                    return;
+                }
+
+                liquidPath
+                    .attr('d', flowPath.attr('d'))
+                    .attr('stroke', `url(#liquidGradient)`)
+                    .attr('opacity', 0.8);
+
+                // set dash pattern and offset
+                const dashLen = totalLen * 0.6;
+                liquidPath
+                    .attr('stroke-dasharray', `${dashLen} ${totalLen}`)
+                    .attr('stroke-dashoffset', totalLen);
+
+                liquidPath
+                    .interrupt()
+                    .transition()
+                    .duration(3000 / Math.max(1, mg / 100)) // faster with more caffeine
+                    .ease(d3.easeLinear)
+                    .attr('stroke-dashoffset', 0)
+                    .on('end', () => updateLiquidFlow(mg));
+            }
+
+
+        function setCupFillLevel(level01, animate = true) {
+                const L = Math.max(0, Math.min(1, level01));
+                const y = 1 - L;                 // fill from bottom
+                const h = Math.max(L, 0.001);    // avoid 0-height bug
+
+                const gate = d3.select('#cupLevelGate');
+                (animate ? gate.interrupt().transition().duration(350) : gate)
+                    .attr('y', y)
+                    .attr('height', h);
+            }
+
+
+function positionHeadGlowFrom(node) {
+        if (!node || !headGlow) return;
+
+        const b = node.getBBox();
+        const cxLocal = b.x + b.width / 2;
+        const cyLocal = b.y + b.height / 2;
+
+        const m = node.getCTM();            // includes gSil translate/scale
+        const cx = m.a * cxLocal + m.c * cyLocal + m.e;
+        const cy = m.b * cxLocal + m.d * cyLocal + m.f;
+
+        const sx = Math.hypot(m.a, m.b);
+        const sy = Math.hypot(m.c, m.d);
+
+        // Slightly bigger to “halo” the hair shape
+        const r = 0.70 * Math.max(b.width * sx, b.height * sy);
+
+        headGlow.attr('cx', cx).attr('cy', cy).attr('r', r);
+    }
+
+
+
+
+        function updateFlowPath() {
+                // Control points you can tune:
+                const underChinOffsetX = -32;  // (-) = bend left under chin
+                const underChinOffsetY = 20;  // (+) = how far below the mouth the bend starts
+                const stomachPullX = 20;  // (-) = pull inward toward torso
+                const stomachPullY = 150;  // (+) = how far down before heading to tummy
+
+                // Derived control points
+                const c1 = {                      // “under chin” control
+                    x: anchors.mouth.x + underChinOffsetX,
+                    y: anchors.mouth.y + underChinOffsetY
+                };
+                const mid = {                     // a mid point above tummy to smooth S-curve
+                    x: (anchors.neck.x + anchors.tummy.x) / 1.9 + stomachPullX,
+                    y: anchors.neck.y + stomachPullY
+                };
+
+                const d = [
+                    `M ${anchors.mouth.x},${anchors.mouth.y}`,
+                    `Q ${c1.x},${c1.y} ${anchors.neck.x},${anchors.neck.y}`,
+                    `T ${mid.x},${mid.y}`,
+                    `T ${anchors.tummy.x},${anchors.tummy.y + 60}` // exit slightly below tummy
+                ].join(' ');
+
+               if (!liquidPath) {
+                liquidPath = gOv.append('path')
+                    .attr('id', 'liquidPath')
+                    .attr('fill', 'none')
+                    .attr('stroke', 'url(#liquidGradient)')
+                    .attr('stroke-width', 12)
+                    .attr('stroke-linecap', 'round')
+                    .attr('opacity', 0.8);
+            } else {
+                // just update the path shape when anchors move
+                liquidPath.attr('d', d);
+            }
+
+
+                if (!flowPath) {
+                    flowPath = gOv.append('path')
+                        .attr('id', 'coffeeFlowPath')
+                        .attr('d', d)
+                        .attr('fill', 'none')
+                        .attr('stroke', 'none')        // keep hidden
+                        .attr('pointer-events', 'none');
+                } else {
+                    flowPath.attr('d', d);
+                }
+            }
+
+                // ensure a “Custom” option exists at the top of the Coffee Type select
+                function ensureCustomOption() {
+                    const sel = el.coffeeType;
+                    if (!sel.querySelector('option[value="__custom"]')) {
+                        const opt = document.createElement('option');
+                        opt.value = '__custom';
+                        opt.textContent = 'Custom';
+                        sel.insertBefore(opt, sel.firstChild);
+                    }
+                }
+
+
+
+    // map drink name → liquid color
+    function coffeeColor(name) {
+        const n = (name || '').toLowerCase();
+        if (n.includes('cold brew')) return '#1f1410';
+        if (n.includes('espresso')) return '#3b2f2f';
+        if (n.includes('americano')) return '#4a3a2a';
+        if (n.includes('latte')) return '#c9a172';
+        if (n.includes('cappuccino')) return '#b58963';
+        if (n.includes('mocha')) return '#6b4a2f';
+        if (n.includes('flat white')) return '#d2b48c';
+        if (n.includes('macchiato')) return '#a87950';
+        if (n.includes('decaf')) return '#8b6d5c';
+        // fallback
+        return '#6f4e37';
+    }
+
+    const sleepLabel = () => {
+        const v = +el.sleep.value || 0;
+        document.getElementById('sleepVal').textContent = `${v} hrs`;
+    };
+
+
+    // live label for caffeine slider
+    const cafLabel = () => {
+        const v = +el.caffeine.value || 0;
+        document.getElementById('caffeineVal').textContent = `${v} mg`;
+    };
+
+
+        /* ---------- Load CSV + SVG ---------- */
+        Promise.all([
+                d3.csv('synthetic_coffee_health_10000.csv'),
+                fetch('man-drinking-water-svgrepo-com.svg').then(r => r.text()),
+            ])
+                .then(([rows, svgText, coffeeData]) => {
+            coffeeRows = rows;
+            rows.forEach(r => {
+                        r.Caffeine_mg = asNum(r.Caffeine_mg);
+                        r.Stress_Level = asNum(r.Stress_Level);
+                        r.Sleep_Hours = asNum(r.Sleep_Hours);
+                    });
+                    const valid = rows.filter(r => r.Country && !Number.isNaN(r.Caffeine_mg) && !Number.isNaN(r.Stress_Level) && !Number.isNaN(r.Sleep_Hours));
+
+                    // aggregate by country
+                    byCountry = d3.rollups(valid, v => ({
+                        Caffeine_mg: d3.mean(v, d => d.Caffeine_mg),
+                        Stress_Level: d3.mean(v, d => d.Stress_Level),
+                        Sleep_Hours: d3.mean(v, d => d.Sleep_Hours),
+                        n: v.length
+                    }), d => d.Country).map(([Country, vals]) => ({ Country, ...vals }))
+                        .sort((a, b) => d3.ascending(a.Country, b.Country));
+
+                    // populate dropdown
+                    el.country.innerHTML = '';
+                    byCountry.forEach(r => {
+                        const o = document.createElement('option');
+                        o.value = r.Country;
+                        o.textContent = r.Country;
+                        el.country.appendChild(o);
+                    });
+
+                    el.country.value = byCountry.some(d => d.Country === 'USA') ? 'USA' : byCountry[0]?.Country;
+                    updateEverything();
+
+
+            // inline external SVG
+            const parser = new DOMParser();
+            const extSVG = parser.parseFromString(svgText, 'image/svg+xml').documentElement;
+            const imported = document.importNode(extSVG, true);
+            (imported.childNodes || []).forEach?.(n => {
+                if (n.nodeType === 1) gSil.node().appendChild(n.cloneNode(true));
+            });
+
+            // target area within the stage to place the silhouette
+            const target = { x: 60, y: 20, w: 1080, h: 860 }; // more generous box
+            const padding = 0.06; // 6% padding around the silhouette
+
+            let bbox;
+            try { bbox = gSil.node().getBBox(); }
+            catch (e) { bbox = { x: -20.34, y: 0, width: 357.512, height: 357.512 }; }
+
+            // available size after padding
+            const fitW = target.w * (1 - 2 * padding);
+            const fitH = target.h * (1 - 2 * padding);
+
+            // scale to fit while preserving aspect ratio
+            const s = Math.min(fitW / bbox.width, fitH / bbox.height);
+
+            // center within target, accounting for bbox origin
+            const tx = target.x + (target.w - s * bbox.width) / 2 - s * bbox.x;
+            const ty = target.y + (target.h - s * bbox.height) / 2 - s * bbox.y;
+
+            gSil.attr('transform', `translate(${tx},${ty}) scale(${s})`);
+
+            // compute anchors in stage coordinates using original SVG bbox + transform
+            const tAnchor = (rx, ry) => {
+                // rx,ry are in original bbox-relative [0..1]
+                // convert to original coords, then apply our scale/translate
+                const ox = bbox.x + rx * bbox.width;
+                const oy = bbox.y + ry * bbox.height;
+                return { x: tx + s * ox, y: ty + s * oy };
+            };
+
+            anchors = {
+                head: tAnchor(0.5, 0.18),
+                mouth: tAnchor(0.4, 0.29),  // <-- was 0.4, 0.3
+                neck: tAnchor(0.5, 0.34),    // a touch right & lower
+                tummy: tAnchor(0.6, 0.8),    // a touch lower
+                eyeL: tAnchor(0.58, 0.20),
+                eyeR: tAnchor(0.62, 0.20),
+                cig: tAnchor(0.18, 0.21)
+            };
+
+
+
+            // 1) Detect the real hair path FIRST
+            // --- after you set headPath and give it an id ---
+            const hairCandidates = gSil.selectAll('path.c').nodes();
+            headPath = hairCandidates.length
+                ? hairCandidates.sort((a, b) => (b.getBBox().width * b.getBBox().height) -
+                    (a.getBBox().width * a.getBBox().height))[0]
+                : null;
+
+            if (headPath) {
+                headPath.setAttribute('id', 'hairShape');
+
+                // group that shares the silhouette transform
+                const glowGroup = gOv.select('#headGlowGroup').empty()
+                    ? gOv.append('g').attr('id', 'headGlowGroup')
+                    : gOv.select('#headGlowGroup');
+                glowGroup.attr('transform', gSil.attr('transform'));
+
+                let headUnderpaint = glowGroup.select('#headUnderpaint');
+                if (headUnderpaint.empty()) {
+                    headUnderpaint = glowGroup.append('use')
+                        .attr('id', 'headUnderpaint')
+                        .attr('href', '#hairShape')
+                        .attr('fill', '#ffffff')     // pure white
+                        .attr('stroke', 'none')
+                        .attr('opacity', 1)          // max out so gray is fully neutralized
+                        .style('mix-blend-mode', 'lighten') // keeps black stroke, wipes gray
+                        .attr('pointer-events', 'none')
+                        .lower();
+                }
+
+                let headColorWash = glowGroup.select('#headColorWash');
+                if (headColorWash.empty()) {
+                    headColorWash = glowGroup.append('use')
+                        .attr('id', 'headColorWash')
+                        .attr('href', '#hairShape')
+                        .attr('fill', '#ff2a2a')           // vivid red
+                        .attr('opacity', 0)                 // driven in updateEverything
+                        .style('mix-blend-mode', 'screen')  // brightens without killing the outline
+                        .attr('pointer-events', 'none');
+                }
+
+
+
+
+                // then (re)create the actual glow ABOVE the underpaint
+                let headGlow = glowGroup.select('#headGlow');
+                if (headGlow.empty()) {
+                    headGlow = glowGroup.append('use')
+                        .attr('id', 'headGlow')
+                        .attr('href', '#hairShape')
+                        .attr('fill', 'none')
+                        .attr('stroke', 'none')
+                        .attr('filter', 'url(#headOuterGlow)')
+                        .style('mix-blend-mode', 'screen')
+                        .attr('pointer-events', 'none');
+                }
+            }
+
+            // --- Draw cigarette near the hand ---
+                    cigGroup = gOv.append('g')
+                        .attr('id', 'cigaretteG')
+                        .attr('pointer-events', 'none');
+
+                    // base of cigarette
+                    cigGroup.append('rect')
+                        .attr('id', 'cigBody')
+                        .attr('x', anchors.cig.x - CIG.len / 2 + 6)   // <— shift right by 6
+                        .attr('y', anchors.cig.y - CIG.thick / 2)
+                        .attr('width', CIG.len - 6)                   // <— shorter to make room for tip
+                        .attr('height', CIG.thick)
+                        .attr('rx', 3)
+                        .attr('fill', '#f9fafb')
+                        .attr('stroke', '#e5e7eb');
+
+
+                    // tip (burning end)
+                    cigGroup.append('rect')
+                        .attr('id', 'cigTip')
+                        .attr('x', anchors.cig.x - CIG.len / 2)       // <— left end now
+                        .attr('y', anchors.cig.y - CIG.thick / 2)
+                        .attr('width', 6)
+                        .attr('height', CIG.thick)
+                        .attr('rx', 2)
+                        .attr('fill', '#ef4444');
+
+
+                    // start hidden when not a smoker
+                    cigGroup.style('display', 'none');
+
+
+
+            // 3) And finally position it using the hair path geometry
+            positionHeadGlowFrom(headPath);
+
+            updateFlowPath(); // keep this call
+            updateSmokePath();
+
+            // after anchors are set:
+            updateFlowPath();
+
+            
+
+
+            // clip for fallback head tint
+            headClipCircle.attr('cx', anchors.head.x).attr('cy', anchors.head.y).attr('r', 80);
+            cupLiquidNodes = guessCupLiquidNodes(gSil);
+                    (cupLiquidNodes || []).forEach(n => {
+                        n.setAttribute('clip-path', 'url(#cupLevelClip)');
+                    });
+                    paintCupCoffee(currentCoffeeColor);
+
+                    applyCountryDefaults();
+                    updateEverything();
+                });
+
+    // Replace this function
+    function guessCupLiquidNodes(gRoot) {
+        const nodes = [];
+
+        // 1) Anything with class "d" (the water in your SVG)
+        gRoot.selectAll('.d').each(function () { nodes.push(this); });
+
+        // 2) Fallback: look at computed style in case the class name differs
+        gRoot.selectAll('*').each(function () {
+            const cs = window.getComputedStyle(this);
+            const comp = (cs?.fill || '').toLowerCase();
+            // #bce2ef in rgb is rgb(188, 226, 239)
+            if (comp.includes('rgb(188, 226, 239)') || comp === '#bce2ef') {
+                nodes.push(this);
+            }
+        });
+
+        // de-dup
+        return Array.from(new Set(nodes));
+    }
+
+    // Keep this, but make sure we set style.fill (overrides class fill)
+    function paintCupCoffee(color) {
+        (cupLiquidNodes || []).forEach(n => {
+            n.style.fill = color;       // <- wins over class-based fill
+            n.setAttribute('fill', color); // <- helpful if the style element is removed later
+        });
+    }
+
+    function renderStressBreakdown(contrib, inp, avg) {
+            const summaryEl = document.getElementById('stressSummaryLine');
+            const factorsEl = document.getElementById('factorList');
+            if (!summaryEl || !factorsEl) return;
+
+            const country = inp.Country || 'this country';
+
+            // Top one-liner
+            summaryEl.textContent =
+                `For a ${inp.age}-year-old ${inp.gender} in ${country}, the model starts around `
+                + `${Math.round(contrib.base)}% stress and adjusts based on caffeine, sleep, `
+                + `activity, smoking, alcohol, age, and gender.`;
+
+            // Sort factors by absolute impact, biggest first
+            const sorted = [...contrib.factors].sort((a, b) =>
+                Math.abs(b.delta) - Math.abs(a.delta)
+            );
+
+            // Build chips
+            factorsEl.innerHTML = '';
+            sorted.forEach(f => {
+                const impact = Math.round(f.delta);
+                if (impact === 0) return;
+
+                const chip = document.createElement('div');
+                chip.style.padding = '4px 6px';
+                chip.style.borderRadius = '9999px';
+                chip.style.border = '1px solid #e5e7eb';
+                chip.style.background = impact > 0 ? '#fee2e2' : '#dcfce7';
+                chip.style.fontSize = '11px';
+                chip.style.whiteSpace = 'nowrap';
+
+                const sign = impact > 0 ? '+' : '';
+                const label = impact > 0 ? 'raises' : 'lowers';
+
+                chip.textContent = `${f.label}: ${label} stress by ${sign}${impact} pts`;
+                factorsEl.appendChild(chip);
+            });
+        }
+
+
+    function computeStressContributions(inp, avg) {
+            const base = (avg?.Stress_Level ?? 35);
+            const cafBase = (avg?.Caffeine_mg ?? 250);
+            const sleepBase = (avg?.Sleep_Hours ?? 7);
+
+            const cafEff = 0.02 * (inp.caffeine - cafBase);
+            const sleepEff = -5.0 * (inp.sleep - sleepBase);
+            const actEff = -1.2 * (inp.activity - 1);
+            const smokeEff = (inp.smoking === 'Y') ? 8 : 0;
+            const alcEff = (inp.alcohol === 'Y') ? 3 : 0;
+            const genderEff = (inp.gender === 'female') ? 1.0 : 0.0;
+            const ageEff = (inp.age >= 35 && inp.age <= 55) ? 2.0 : 0.0;
+
+            const total = base + cafEff + sleepEff + actEff + smokeEff + alcEff + genderEff + ageEff;
+            const clipped = Math.max(0, Math.min(100, total));
+
+            return {
+                base,
+                total: clipped,
+                factors: [
+                    { id: 'caffeine', label: 'Caffeine', delta: cafEff, direction: cafEff >= 0 ? '↑' : '↓' },
+                    { id: 'sleep', label: 'Sleep', delta: sleepEff, direction: sleepEff <= 0 ? '↓' : '↑' },
+                    { id: 'activity', label: 'Activity', delta: actEff, direction: actEff <= 0 ? '↓' : '↑' },
+                    { id: 'smoking', label: 'Smoking', delta: smokeEff, direction: smokeEff >= 0 ? '↑' : '↓' },
+                    { id: 'alcohol', label: 'Alcohol', delta: alcEff, direction: alcEff >= 0 ? '↑' : '↓' },
+                    { id: 'age', label: 'Age band', delta: ageEff, direction: ageEff >= 0 ? '↑' : '↓' },
+                    { id: 'gender', label: 'Gender', delta: genderEff, direction: genderEff >= 0 ? '↑' : '↓' },
+                ]
+            };
+        }
+
+
+        /* ---------- Toy stress predictor (for demo) ---------- */
+    function predictStress(inp, avg) {
+        return computeStressContributions(inp, avg).total;
+    }
+
+
+
+        /* ---------- Scales ---------- */
+    const stressColor = d3.scaleLinear()
+        .domain([0, 50, 100])
+        .range(["#3b82f6", "#f59e0b", "#dc2626"]) // blue → amber → red
+        .clamp(true);
+
+
+        /* ---------- Inputs & country defaults ---------- */
+        function currentInputs() {
+            return {
+                Country: el.country.value,
+                age: +el.age.value || 35,
+                gender: el.gender.value,
+                caffeine: +el.caffeine.value || 0,
+                sleep: +el.sleep.value || 0,
+                activity: +el.activity.value || 0,
+                smoking: el.smoking.value,
+                alcohol: el.alcohol.value
+            };
+        }
+        function countryAvg(country) { return byCountry.find(d => d.Country === country); }
+    function applyCountryDefaults() {
+        const c = countryAvg(el.country.value);
+        if (!c) return;
+
+        // DO NOT touch caffeine here – coffee type controls it
+        el.sleep.value = (c.Sleep_Hours ?? 7).toFixed(1);
+        sleepLabel();
+    }
+
+
+
+
+        /* ---------- Particles from mouth → neck ---------- */
+       /* ---------- Smooth particle engine (rAF via d3.timer) ---------- */
+        const particleEngine = {
+            timer: null,
+            acc: 0,          // spawn accumulator (particles)
+            rate: 8,         // particles per second (updates with caffeine)
+            speed: 180       // pixels per second (updates with caffeine)
+        };
+
+        // maps caffeine → rate & speed
+            const cafToRate = d3.scaleLinear().domain([0, 800]).range([0, 40]).clamp(true);
+            const cafToSpeed = d3.scaleLinear().domain([0, 800]).range([140, 280]).clamp(true);
+
+
+        /* ---------- Smoke engine (rAF via d3.timer) ---------- */
+            const smokeEngine = {
+                timer: null,
+                acc: 0,        // spawn accumulator
+                rate: 0,       // puffs per second
+                speed: 60,     // px/s along path
+                on: false,
+                path: null
+            };
+
+            // curved path that goes a bit outward then rises
+    function updateSmokePath() {
+        if (!anchors) return;
+
+        // start at cigarette tip (right end)
+        const start = {
+            x: anchors.cig ? anchors.cig.x - CIG.len / 2 : anchors.mouth.x,  // left end
+            y: anchors.cig ? anchors.cig.y : anchors.mouth.y
+        };
+
+
+        const c1 = { x: start.x + 10, y: start.y - 10 };  // slight forward
+        const c2 = { x: start.x + 5, y: start.y - 70 };  // then up
+        const end = { x: start.x - 20, y: start.y - 160 }; // curl back
+
+        const d = `M ${start.x},${start.y} C ${c1.x},${c1.y} ${c2.x},${c2.y} ${end.x},${end.y}`;
+
+        if (!smokeEngine.path) {
+            smokeEngine.path = gOv.append('path')
+                .attr('id', 'smokePath')
+                .attr('d', d)
+                .attr('fill', 'none')
+                .attr('stroke', 'none')
+                .attr('pointer-events', 'none');
+        } else {
+            smokeEngine.path.attr('d', d);
+        }
+    }
+
+
+            function toggleSmoking(isOn) {
+                    smokeEngine.on = isOn;
+                    smokeG.selectAll('*').remove();
+
+                    // NEW: show/hide cigarette itself
+                    if (cigGroup) {
+                        cigGroup.style('display', isOn ? 'block' : 'none');
+                    }
+
+                    if (!isOn) {
+                        if (smokeEngine.timer) {
+                            smokeEngine.timer.stop();
+                            smokeEngine.timer = null;
+                        }
+                        return;
+                    }
+
+                    smokeEngine.rate = 20;  // puffs / sec
+                    smokeEngine.speed = 55; // px/sec
+
+                    if (!smokeEngine.timer) {
+                        let last = performance.now();
+                        smokeEngine.timer = d3.timer(() => {
+                            if (!anchors || !smokeEngine.on || !smokeEngine.path) return;
+                            const now = performance.now();
+                            const dt = (now - last) / 1000;
+                            last = now;
+
+                            smokeEngine.acc += smokeEngine.rate * dt;
+                            while (smokeEngine.acc >= 1) {
+                                spawnSmoke();
+                                smokeEngine.acc -= 1;
+                            }
+                        });
+                    }
+                }
+
+
+            function spawnSmoke() {
+                const pathNode = smokeEngine.path.node();
+                const totalLen = pathNode.getTotalLength();
+                const startLen = Math.random() * 6; // tiny offset so puffs don’t stack
+                const dur = (totalLen - startLen) / smokeEngine.speed * 1000;
+
+                const puff = smokeG.append('circle')
+                    .attr('r', 4 + Math.random() * 3)
+                    .attr('fill', '#9ca3af')        // light gray
+                    .attr('opacity', 0.28)
+                    .attr('filter', 'url(#smokeBlur)');
+
+                // small sideways drift (wind) + growth while fading
+                const wind = (Math.random() * 0.6 + 0.2) * (Math.random() < 0.5 ? -1 : 1); // ±
+                const grow = 1.6 + Math.random() * 0.7;
+
+                puff.transition()
+                    .duration(dur)
+                    .ease(d3.easeLinear)
+                    .tween('along', () => {
+                        return (t) => {
+                            const len = startLen + t * (totalLen - startLen);
+                            const pt = pathNode.getPointAtLength(len);
+
+                            // gentle random wobble
+                            const wob = Math.sin(t * 6 + Math.random() * 6.28) * 2.0;
+
+                            puff
+                                .attr('cx', pt.x + wind * t * 25 + wob)
+                                .attr('cy', pt.y - t * 8)            // slight buoyancy
+                                .attr('r', 4 * (1 + t * grow))
+                                .attr('opacity', 0.28 * (1 - t));    // fade out
+                        };
+                    })
+                    .remove();
+            }
+
+
+        function configureParticles(caffeineMg) {
+                const mg = Math.max(0, +caffeineMg || 0);
+
+                if (mg === 0) {
+                    // stop timer, clear all existing dots
+                    if (particleEngine.timer) {
+                        particleEngine.timer.stop();
+                        particleEngine.timer = null;
+                    }
+                    particlesG.selectAll('*').interrupt().remove();
+                    particleEngine.acc = 0;
+                    return;
+                }
+
+                // non-zero → (re)configure and run
+                particleEngine.rate = cafToRate(mg);
+                particleEngine.speed = cafToSpeed(mg);
+
+                if (!particleEngine.timer) {
+                    let last = performance.now();
+                    particleEngine.timer = d3.timer(() => {
+                        if (!anchors) return;
+                        const now = performance.now();
+                        const dt = (now - last) / 1000;
+                        last = now;
+
+                        particleEngine.acc += particleEngine.rate * dt;
+                        while (particleEngine.acc >= 1) {
+                            spawnParticle();
+                            particleEngine.acc -= 1;
+                        }
+                    });
+                }
+            }
+
+
+        function spawnParticle() {
+                if (!flowPath) return;
+
+                const pathNode = flowPath.node();
+                const totalLen = pathNode.getTotalLength();
+
+                // start very near the mouth, not exactly 0, so dots don't stack
+                const startLen = Math.random() * 6;          // 0–6 px down the path
+                const p = particlesG.append('circle')
+                    .attr('r', 2.6 + Math.random() * 2.0)
+                    .attr('fill', currentCoffeeColor)
+                    .attr('opacity', 0.95);
+
+                // constant speed (px/s) → duration (ms)
+                const dur = (totalLen - startLen) / particleEngine.speed * 1000;
+
+                // tiny lateral jitter perpendicular to the tangent
+                const lateral = (t) => (Math.sin(t * 8 + Math.random() * 6.28) * 1.2);
+
+                p.transition()
+                    .duration(dur)
+                    .ease(d3.easeLinear)
+                    .tween('along', () => {
+                        return (t) => {
+                            const len = startLen + t * (totalLen - startLen);
+                            const pt = pathNode.getPointAtLength(len);
+                            // tangent for small perpendicular jitter
+                            const eps = 0.5;
+                            const pt2 = pathNode.getPointAtLength(Math.min(totalLen, len + eps));
+                            const dx = pt2.x - pt.x, dy = pt2.y - pt.y;
+                            const mag = Math.hypot(dx, dy) || 1;
+                            // unit normal (perpendicular)
+                            const nx = -dy / mag, ny = dx / mag;
+
+                            const j = lateral(t);
+                            p.attr('cx', pt.x + nx * j)
+                                .attr('cy', pt.y + ny * j)
+                                .attr('opacity', 0.95 - 0.85 * t); // fade near the end
+                        };
+                    })
+                    .remove();
+            }
+
+
+
+
+        /* ---------- Main update ---------- */
+        function updateEverything() {
+            if (!anchors) return;
+            const inp = currentInputs();
+            const avg = countryAvg(inp.Country);
+
+            // predicted stress (0..100) → head color
+            const contrib = computeStressContributions(inp, avg);
+            const stress = predictStress(inp, avg);
+            el.stressVal.textContent = `${Math.round(stress)}%`;
+            // color based on stress
+            const col = d3.color(stressColor(stress)).formatHex();
+            const vividRed = '#ff2a2a';
+            const glowColor = (stress >= 70) ? vividRed : col;
+
+            // stronger outer glow
+            const glowAlpha = d3.scaleLinear()
+                .domain([0, 50, 100])
+                .range([0.22, 0.55, 0.95])
+                .clamp(true)(stress);
+
+            // NEW: interior red wash opacity so the whole head reads red at high stress
+            const washAlpha = d3.scaleLinear()
+                .domain([0, 50, 100])
+                .range([0.00, 0.35, 0.80])  // tweak to taste
+                .clamp(true)(stress);
+
+            // drive the filter’s flood (outer glow)
+            d3.select('#headOuterGlow').select('feFlood')
+                .attr('flood-color', glowColor)
+                .attr('flood-opacity', glowAlpha);
+
+            // drive the interior wash (fills the gray)
+            gOv.select('#headColorWash')
+                .attr('fill', glowColor)
+                .attr('opacity', washAlpha);
+
+            // pulse only at high stress
+            gOv.select('#headGlow').classed('pulsing', stress >= 70);
+
+            // Fallback tint only when we *don’t* have a hair path
+            if (!headPath) {
+                headTint.interrupt().transition().duration(300)
+                    .attr('fill', col)
+                    .attr('opacity', 0.65);
+            } else {
+                headTint.attr('opacity', 0);
+            }
+
+            renderStressBreakdown(contrib, inp, avg);
+
+            // keep cup liquid as coffee
+            paintCupCoffee(currentCoffeeColor);
+            cafLabel();
+
+            // particles from mouth (not head)
+            configureParticles(inp.caffeine);
+
+            //smoking toggle
+            toggleSmoking(inp.smoking === 'Y');
+
+            updateLiquidFlow(inp.caffeine);
+        }
+    </script>
+</body>
+
+</html>

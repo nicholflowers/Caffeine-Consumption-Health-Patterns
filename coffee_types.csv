@@ -1,0 +1,55 @@
+category,brand_product,serving_size_desc,size_oz_min,size_oz_max,caffeine_mg_min,caffeine_mg_max
+Coffee & tea drinks (coffee shops),Starbucks Coffee,20 oz. venti,20,20,390,490
+Coffee & tea drinks (coffee shops),Dutch Bros 9-1-1 Blended Freeze,32 oz. large,32,32,440,440
+Coffee & tea drinks (coffee shops),Starbucks Coffee,16 oz. grande,16,16,315,390
+Coffee & tea drinks (coffee shops),Starbucks Iced Coffee,30 oz. trenta,30,30,320,320
+Coffee & tea drinks (coffee shops),Caribou Coffee,16 oz. medium,16,16,305,305
+Coffee & tea drinks (coffee shops),Dunkin' Frozen Coffee,14 oz. medium,14,14,295,295
+Coffee & tea drinks (coffee shops),Starbucks Coffee,12 oz. tall,12,12,235,290
+Coffee & tea drinks (coffee shops),Dunkin’ Coffee,20 oz. large,20,20,270,270
+Coffee & tea drinks (coffee shops),Starbucks Caffè Americano,16 oz. grande,16,16,225,225
+Coffee & tea drinks (coffee shops),Dunkin’ Coffee,14 oz. medium,14,14,210,210
+Coffee & tea drinks (coffee shops),Starbucks Cold Brew,16 oz. grande,16,16,205,205
+Coffee & tea drinks (coffee shops),Starbucks Flat White,16 oz. grande or 20 oz. venti,16,20,195,195
+Coffee & tea drinks (coffee shops),Starbucks Coffee,8 oz. short,8,8,155,195
+Coffee & tea drinks (coffee shops),Panera Coffee,16 oz. regular,16,16,189,189
+Coffee & tea drinks (coffee shops),Starbucks Caffè Mocha,20 oz. venti,20,20,185,185
+Coffee & tea drinks (coffee shops),Starbucks Iced Coffee,16 oz. grande,16,16,185,185
+Coffee & tea drinks (coffee shops),Starbucks Caffè Mocha—hot or iced,16 oz. grande,16,16,175,175
+Coffee & tea drinks (coffee shops),Dunkin’—Latte or Cappuccino,14 oz. medium,14,14,166,166
+Coffee & tea drinks (coffee shops),Starbucks—Caffè Latte or Cappuccino,16 oz. grande or 20 oz. venti,16,20,150,150
+Coffee & tea drinks (coffee shops),Starbucks Espresso,1.5 oz. doppio (2 shots),1.5,1.5,150,150
+Coffee & tea drinks (coffee shops),Starbucks Misto,16 oz. grande,16,16,150,150
+Coffee & tea drinks (coffee shops),Starbucks Flat White,8 oz. short or 12 oz. tall,8,12,130,130
+Coffee & tea drinks (coffee shops),Starbucks Chai Latte—hot or iced,16 oz. grande,16,16,95,95
+Coffee & tea drinks (coffee shops),Starbucks Coffee Frappuccino,16 oz. grande,16,16,95,95
+Coffee & tea drinks (coffee shops),Starbucks Caffè Mocha,8 oz. short or 12 oz. tall,8,12,90,95
+Coffee & tea drinks (coffee shops),Starbucks—Caffè Latte or Cappuccino,8 oz. short or 12 oz. tall,8,12,75,75
+Coffee & tea drinks (coffee shops),Starbucks Espresso,0.75 oz. solo (1 shot),0.75,0.75,75,75
+Coffee & tea drinks (coffee shops),Starbucks Matcha Latte—hot or iced,16 oz. grande,16,16,65,65
+Coffee & tea drinks (coffee shops),Dutch Bros Chai Latte,16 oz. medium,16,16,35,35
+Coffee & tea drinks (coffee shops),"Starbucks Decaf Coffee, Pike Place Roast",16 oz. grande,16,16,25,25
+Coffee & tea drinks (coffee shops),"Starbucks Decaf Coffee, Pike Place Roast",8 oz. short,8,8,15,15
+Coffee & tea drinks (coffee shops),Panera Chai Tea Latte,16 oz. regular,16,16,9,9
+Coffee drinks (bottles and cans),Stumptown Original Cold Brew Coffee,10.5 oz.,10.5,10.5,295,295
+Coffee drinks (bottles and cans),Starbucks Black Unsweet Cold Brew,12 oz.,12,12,255,255
+Coffee drinks (bottles and cans),Stumptown Cold Brew Concentrate 2X,5 oz.,5,5,235,235
+Coffee drinks (bottles and cans),High Brew Nitro Black Cold Brew,10 oz.,10,10,200,200
+Coffee drinks (bottles and cans),"Califia Farms Cold Brew Black Coffee, Medium Roast",12 oz.,12,12,175,175
+Coffee drinks (bottles and cans),"Califia Farms Cold Brew Black Coffee, Blonde Roast",12 oz.,12,12,170,170
+Coffee drinks (bottles and cans),La Colombe Triple Draft Latte,9 oz.,9,9,150,150
+Coffee drinks (bottles and cans),Califia Farms Almond Latte,12 oz.,12,12,125,125
+Coffee drinks (bottles and cans),Starbucks Vanilla Latte Chilled Espresso Beverage,12 oz.,12,12,125,125
+Coffee drinks (bottles and cans),"La Colombe Double Draft Latte, Oatmilk",9 oz.,9,9,120,120
+Coffee drinks (bottles and cans),Starbucks Espresso and Cream,6.5 oz.,6.5,6.5,120,120
+Coffee drinks (bottles and cans),Califia Farms Cold Brew Concentrate,"4 oz., makes 8 oz.",4,8,115,115
+Coffee drinks (bottles and cans),"Starbucks Frappuccino, Coffee",13.7 oz.,13.7,13.7,110,110
+Coffee drinks (bottles and cans),"Starbucks Frappuccino, Mocha",13.7 oz.,13.7,13.7,105,105
+Coffee drinks (bottles and cans),La Colombe Double Draft Latte,9 oz.,9,9,100,100
+Coffee drinks (bottles and cans),"Starbucks Frappuccino, Coffee",9.5 oz.,9.5,9.5,75,75
+Coffee drinks (bottles and cans),Califia Farms Mocha Almond Latte,12 oz.,12,12,45,45
+Coffee & espresso (ground),Death Wish Coffee Co. Instant Dark Roast Coffee,"1 packet, makes 8–12 oz.",8,12,300,300
+Coffee & espresso (ground),Folgers Classic Roast Coffee,"2 Tbs., makes 12 oz.",12,12,120,160
+Coffee & espresso (ground),"Keurig K-Cup, most varieties","1 pod, makes 8 oz.",8,8,75,150
+Coffee & espresso (ground),Folgers 1/2 Caff Coffee,"2 Tbs., makes 12 oz.",12,12,60,80
+Coffee & espresso (ground),Folgers Classic Decaf Coffee,"2 Tbs., makes 12 oz.",12,12,2,8
