@@ -48,6 +48,16 @@ Twelve user interviews generated 41 feedback items, which were prioritized with 
 
 The prioritized feedback drove a final round of improvements: adding a color legend, making the predicted stress value more prominent, adding context about what the stress percentage represents, correcting the color scheme from green to blue, and preventing caffeine from auto-updating when switching countries.
 
+
+## 🚀 Future Improvements
+
+Given more time, the next steps would be:
+
+- **Real predictions:** swap the current formula-based stress estimate for a trained ML model
+- **Richer coffee data:** let the 54 coffee products differ in caffeine content and feed that into the result
+- **Enhanced animations:** more expressive character and particle motion
+- **Applied-change cue:** a clear signal when new inputs have taken effect
+
 ## 🧠 Skills Demonstrated
 
 - **Interactive data visualization:** building a real-time, input-driven D3.js display that maps several variables onto a single embodied figure
