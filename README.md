@@ -8,7 +8,7 @@ See it: https://nicholflowers.github.io/Caffeine-Consumption-Health-Patterns/
 
 Caffeine is one of the most widely consumed stimulants in the world, but its relationship to stress varies significantly from person to person. This project turns that relationship into an interactive visualization: a tool that lets anyone adjust caffeine, sleep, age, and lifestyle factors and watch the predicted stress level shift in real time.
 
-## 🎯 Project Goals
+## 🎯 Goals
 
 - Build an interactive, real-time visualization of how caffeine relates to stress and lifestyle factors
 - Make the relationship feel embodied and immediate rather than abstract, so changing one variable visibly shifts the outcome
