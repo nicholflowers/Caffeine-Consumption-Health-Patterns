@@ -2,7 +2,7 @@
 
 **An interactive visualization that maps caffeine, sleep, and lifestyle data onto a human silhouette that responds in real time.**
 
-See it: https://nicholflowers.github.io/Caffeine-Consumption-Health-Patterns/
+Interact with the Viz: https://nicholflowers.github.io/Caffeine-Consumption-Health-Patterns/
 
 ## 📌 Overview
 
