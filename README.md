@@ -6,7 +6,7 @@ Interact with the Viz: https://nicholflowers.github.io/Caffeine-Consumption-Heal
 
 ## 📌 Overview
 
-Caffeine is one of the most widely consumed stimulants in the world, but its relationship to stress varies significantly from person to person. This project turns that relationship into an interactive visualization: a tool that lets anyone adjust caffeine, sleep, age, and lifestyle factors and watch the predicted stress level shift in real time.
+Caffeine is one of the most widely consumed stimulants in the world, but its relationship to stress varies significantly from person to person. This project turns that relationship into an interactive visualization: a tool that lets anyone adjust caffeine, sleep, age, and lifestyle factors and watch the predicted (estimated) stress level shift in real time.
 
 ## 🎯 Goals
 
